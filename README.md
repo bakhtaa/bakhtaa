@@ -1,4 +1,4 @@
-## Marhbe BIK👋 haya tekhou stylo bik?
+## Marhbe BIK👋 
 
 <!--
 **bakhtaa/bakhtaa** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
