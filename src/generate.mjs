@@ -20,6 +20,17 @@ const HEIGHT = ROWS * (CELL + GAP);
 
 const FLIGHT_DURATION = 52;
 
+const MOTION_KEY_TIMES = [
+    0,
+    0.14,
+    0.28,
+    0.42,
+    0.56,
+    0.70,
+    0.84,
+    1
+];
+
 // ============================================================
 // COULEURS
 // ============================================================
@@ -195,16 +206,148 @@ for (let row = 0; row < ROWS; row++) {
         const level = grid[row][col];
         const id = `dot-${col}-${row}`;
 
+
+        const magicInfo = getMagicInfo(col, row);
+
+let magicAnimations = "";
+
+if (magicInfo) {
+
+    const startTime = magicInfo.start;
+    const endTime = magicInfo.end;
+
+    const startRatio =
+        startTime / FLIGHT_DURATION;
+
+    const endRatio =
+        endTime / FLIGHT_DURATION;
+
+    /*
+     * Le dot devient jaune à l'arrivée de Clochette
+     * et reste jaune jusqu'à la fin du trajet.
+     */
+    magicAnimations = `
+        <!--
+            Le jaune devient permanent après le passage
+            de Clochette.
+        -->
+        <animate
+            attributeName="fill"
+            values="
+                ${levelColor(level)};
+                ${levelColor(level)};
+                ${COLORS.magicBright};
+                ${COLORS.magicBright}
+            "
+            keyTimes="
+                0;
+                ${startRatio.toFixed(4)};
+                ${Math.min(
+                    startRatio + 0.012,
+                    endRatio
+                ).toFixed(4)};
+                1
+            "
+            dur="${FLIGHT_DURATION}s"
+            repeatCount="indefinite"
+        />
+
+        <!--
+            Le dot vibre UNIQUEMENT entre l'arrivée
+            de Clochette et l'arrivée à la zone suivante.
+        -->
+        <animateTransform
+            attributeName="transform"
+            type="translate"
+            values="
+                0 0;
+                0 0;
+                -0.8 -0.4;
+                0.8 0.5;
+                -0.4 0.7;
+                0 0;
+                0 0
+            "
+            keyTimes="
+                0;
+                ${startRatio.toFixed(4)};
+                ${(startRatio + (endRatio - startRatio) * 0.25).toFixed(4)};
+                ${(startRatio + (endRatio - startRatio) * 0.50).toFixed(4)};
+                ${(startRatio + (endRatio - startRatio) * 0.75).toFixed(4)};
+                ${endRatio.toFixed(4)};
+                1
+            "
+            dur="${FLIGHT_DURATION}s"
+            repeatCount="indefinite"
+        />
+
+        <!--
+            Petit agrandissement au moment du passage.
+        -->
+        <animate
+            attributeName="width"
+            values="
+                ${CELL};
+                ${CELL};
+                ${CELL + 2};
+                ${CELL};
+                ${CELL}
+            "
+            keyTimes="
+                0;
+                ${startRatio.toFixed(4)};
+                ${Math.min(
+                    startRatio + 0.012,
+                    endRatio
+                ).toFixed(4)};
+                ${Math.min(
+                    startRatio + 0.025,
+                    endRatio
+                ).toFixed(4)};
+                1
+            "
+            dur="${FLIGHT_DURATION}s"
+            repeatCount="indefinite"
+        />
+
+        <animate
+            attributeName="height"
+            values="
+                ${CELL};
+                ${CELL};
+                ${CELL + 2};
+                ${CELL};
+                ${CELL}
+            "
+            keyTimes="
+                0;
+                ${startRatio.toFixed(4)};
+                ${Math.min(
+                    startRatio + 0.012,
+                    endRatio
+                ).toFixed(4)};
+                ${Math.min(
+                    startRatio + 0.025,
+                    endRatio
+                ).toFixed(4)};
+                1
+            "
+            dur="${FLIGHT_DURATION}s"
+            repeatCount="indefinite"
+        />
+    `;
+}
+
         dotsSvg += `
         <rect
-            id="${id}"
-            x="${x}"
-            y="${y}"
-            width="${CELL}"
-            height="${CELL}"
-            rx="2.5"
-            fill="${levelColor(level)}"
-            opacity="0.95"
+             id="${id}"
+        x="${x}"
+        y="${y}"
+        width="${CELL}"
+        height="${CELL}"
+        rx="2.5"
+        fill="${levelColor(level)}"
+        opacity="0.95"
         >
             <!-- Petite respiration générale -->
             <animate
@@ -221,55 +364,7 @@ for (let row = 0; row < ROWS; row++) {
                 grossit légèrement,
                 puis revient à son état normal.
             -->
-            <animate
-                attributeName="fill"
-                values="${levelColor(level)};
-                        ${COLORS.magic};
-                        ${COLORS.magicBright};
-                        ${levelColor(level)}"
-                dur="1.7s"
-                begin="${getMagicBegin(col, row)}"
-                repeatCount="indefinite"
-            />
-
-            <animate
-                attributeName="width"
-                values="${CELL};
-                        ${CELL + 2};
-                        ${CELL};
-                        ${CELL}"
-                dur="0.55s"
-                begin="${getMagicBegin(col, row)}"
-                repeatCount="indefinite"
-            />
-
-            <animate
-                attributeName="height"
-                values="${CELL};
-                        ${CELL + 2};
-                        ${CELL};
-                        ${CELL}"
-                dur="0.55s"
-                begin="${getMagicBegin(col, row)}"
-                repeatCount="indefinite"
-            />
-
-            <!--
-                Le dot tremble légèrement :
-                effet "énergie magique".
-            -->
-            <animateTransform
-                attributeName="transform"
-                type="translate"
-                values="0 0;
-                        -0.8 -0.4;
-                        0.8 0.5;
-                        -0.4 0.7;
-                        0 0"
-                dur="0.42s"
-                begin="${getMagicBegin(col, row)}"
-                repeatCount="indefinite"
-            />
+           ${magicAnimations}
         </rect>
         `;
     }
@@ -285,10 +380,10 @@ for (let row = 0; row < ROWS; row++) {
 // Cela donne l'impression que l'énergie se propage
 // autour du passage de Clochette.
 // ============================================================
-
-function getMagicBegin(col, row) {
+function getMagicInfo(col, row) {
 
     let closest = Infinity;
+    let closestIndex = -1;
 
     magicCells.forEach((magic, index) => {
 
@@ -302,22 +397,31 @@ function getMagicBegin(col, row) {
         if (distance <= 2.2) {
 
             const baseTime =
-                (index / (magicCells.length - 1))
+                MOTION_KEY_TIMES[index]
                 * FLIGHT_DURATION;
 
-            const delay =
-                baseTime +
-                distance * 0.22;
-
-            closest = Math.min(closest, delay);
+            if (baseTime < closest) {
+                closest = baseTime;
+                closestIndex = index;
+            }
         }
     });
 
-    if (closest === Infinity) {
-        return "indefinite";
+    if (closestIndex === -1) {
+        return null;
     }
 
-    return `${closest.toFixed(2)}s`;
+    const nextTime =
+        closestIndex < magicCells.length - 1
+            ? MOTION_KEY_TIMES[closestIndex + 1]
+              * FLIGHT_DURATION
+            : FLIGHT_DURATION;
+
+    return {
+        zoneIndex: closestIndex,
+        start: closest,
+        end: nextTime
+    };
 }
 
 // ============================================================
