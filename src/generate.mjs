@@ -1,5 +1,13 @@
 import fs from "fs";
 import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// ============================================================
+// CONFIGURATION
+// ============================================================
 
 const COLS = 53;
 const ROWS = 7;
@@ -10,9 +18,60 @@ const GAP = 3;
 const WIDTH = COLS * (CELL + GAP);
 const HEIGHT = ROWS * (CELL + GAP);
 
-// --------------------------------------------------
-// Fake contribution data pour notre premier test
-// --------------------------------------------------
+const FLIGHT_DURATION = 52;
+
+// ============================================================
+// COULEURS
+// ============================================================
+
+const COLORS = {
+    empty: "#161b22",
+
+    green1: "#0e4429",
+    green2: "#006d32",
+    green3: "#26a641",
+    green4: "#39d353",
+
+    magic: "#ffe66d",
+    magicBright: "#fff7b2",
+    magicGlow: "#ffd84d",
+
+    sparkle: "#fff3a6"
+};
+
+// ============================================================
+// CHEMIN DE L'IMAGE
+// ============================================================
+
+const imagePath = path.join(
+    __dirname,
+    "../assets/clochette.png"
+);
+
+if (!fs.existsSync(imagePath)) {
+    throw new Error(
+        "❌ Impossible de trouver assets/clochette.png"
+    );
+}
+
+const imageBase64 = fs
+    .readFileSync(imagePath)
+    .toString("base64");
+
+// ============================================================
+// GENERATION DU GRAPHE
+// ============================================================
+
+function randomLevel() {
+    const r = Math.random();
+
+    if (r < 0.55) return 0;
+    if (r < 0.72) return 1;
+    if (r < 0.86) return 2;
+    if (r < 0.95) return 3;
+
+    return 4;
+}
 
 const grid = [];
 
@@ -20,17 +79,393 @@ for (let row = 0; row < ROWS; row++) {
     const currentRow = [];
 
     for (let col = 0; col < COLS; col++) {
-        currentRow.push(Math.random() > 0.65);
+        currentRow.push(randomLevel());
     }
 
     grid.push(currentRow);
 }
 
-// --------------------------------------------------
-// SVG
-// --------------------------------------------------
+// ============================================================
+// POINTS MAGIQUES
+// Ces points correspondent aux endroits où Clochette
+// traverse réellement la grille.
+// ============================================================
 
-let svg = `
+const magicCells = [
+    { col: 5, row: 5 },
+    { col: 11, row: 2 },
+    { col: 17, row: 4 },
+    { col: 24, row: 1 },
+    { col: 30, row: 5 },
+    { col: 37, row: 2 },
+    { col: 44, row: 4 },
+    { col: 49, row: 1 }
+];
+
+// ============================================================
+// OUTILS
+// ============================================================
+
+function cellX(col) {
+    return col * (CELL + GAP) + CELL / 2;
+}
+
+function cellY(row) {
+    return row * (CELL + GAP) + CELL / 2;
+}
+
+function levelColor(level) {
+    switch (level) {
+        case 1:
+            return COLORS.green1;
+        case 2:
+            return COLORS.green2;
+        case 3:
+            return COLORS.green3;
+        case 4:
+            return COLORS.green4;
+        default:
+            return COLORS.empty;
+    }
+}
+
+// ============================================================
+// CHEMIN DE CLOC HETTE
+//
+// On ne fait PAS un serpent ligne par ligne.
+// On crée une trajectoire douce qui traverse la grille.
+// ============================================================
+
+const p = magicCells.map((point) => ({
+    x: cellX(point.col),
+    y: cellY(point.row)
+}));
+
+const pathData = `
+M ${p[0].x} ${p[0].y}
+
+C
+${p[0].x + 18} ${p[0].y - 12},
+${p[1].x - 18} ${p[1].y + 12},
+${p[1].x} ${p[1].y}
+
+C
+${p[1].x + 18} ${p[1].y - 14},
+${p[2].x - 18} ${p[2].y + 14},
+${p[2].x} ${p[2].y}
+
+C
+${p[2].x + 18} ${p[2].y - 12},
+${p[3].x - 18} ${p[3].y + 12},
+${p[3].x} ${p[3].y}
+
+C
+${p[3].x + 18} ${p[3].y + 15},
+${p[4].x - 18} ${p[4].y - 15},
+${p[4].x} ${p[4].y}
+
+C
+${p[4].x + 18} ${p[4].y - 12},
+${p[5].x - 18} ${p[5].y + 12},
+${p[5].x} ${p[5].y}
+
+C
+${p[5].x + 18} ${p[5].y - 14},
+${p[6].x - 18} ${p[6].y + 14},
+${p[6].x} ${p[6].y}
+
+C
+${p[6].x + 18} ${p[6].y - 12},
+${p[7].x - 18} ${p[7].y + 12},
+${p[7].x} ${p[7].y}
+`;
+
+// ============================================================
+// DOTS DU GRAPHE
+// ============================================================
+
+let dotsSvg = "";
+
+for (let row = 0; row < ROWS; row++) {
+    for (let col = 0; col < COLS; col++) {
+
+        const x = col * (CELL + GAP);
+        const y = row * (CELL + GAP);
+
+        const level = grid[row][col];
+        const id = `dot-${col}-${row}`;
+
+        dotsSvg += `
+        <rect
+            id="${id}"
+            x="${x}"
+            y="${y}"
+            width="${CELL}"
+            height="${CELL}"
+            rx="2.5"
+            fill="${levelColor(level)}"
+            opacity="0.95"
+        >
+            <!-- Petite respiration générale -->
+            <animate
+                attributeName="opacity"
+                values="0.88;1;0.88"
+                dur="${4 + ((row + col) % 4)}s"
+                begin="${(row + col) * 0.03}s"
+                repeatCount="indefinite"
+            />
+
+            <!--
+                Quand la fée arrive :
+                le dot devient lumineux,
+                grossit légèrement,
+                puis revient à son état normal.
+            -->
+            <animate
+                attributeName="fill"
+                values="${levelColor(level)};
+                        ${COLORS.magic};
+                        ${COLORS.magicBright};
+                        ${levelColor(level)}"
+                dur="1.7s"
+                begin="${getMagicBegin(col, row)}"
+                repeatCount="indefinite"
+            />
+
+            <animate
+                attributeName="width"
+                values="${CELL};
+                        ${CELL + 2};
+                        ${CELL};
+                        ${CELL}"
+                dur="0.55s"
+                begin="${getMagicBegin(col, row)}"
+                repeatCount="indefinite"
+            />
+
+            <animate
+                attributeName="height"
+                values="${CELL};
+                        ${CELL + 2};
+                        ${CELL};
+                        ${CELL}"
+                dur="0.55s"
+                begin="${getMagicBegin(col, row)}"
+                repeatCount="indefinite"
+            />
+
+            <!--
+                Le dot tremble légèrement :
+                effet "énergie magique".
+            -->
+            <animateTransform
+                attributeName="transform"
+                type="translate"
+                values="0 0;
+                        -0.8 -0.4;
+                        0.8 0.5;
+                        -0.4 0.7;
+                        0 0"
+                dur="0.42s"
+                begin="${getMagicBegin(col, row)}"
+                repeatCount="indefinite"
+            />
+        </rect>
+        `;
+    }
+}
+
+// ============================================================
+// CALCUL DU MOMENT OÙ UN DOT RÉAGIT
+// ============================================================
+//
+// On utilise une approximation basée sur la position
+// du dot par rapport aux points traversés.
+//
+// Cela donne l'impression que l'énergie se propage
+// autour du passage de Clochette.
+// ============================================================
+
+function getMagicBegin(col, row) {
+
+    let closest = Infinity;
+
+    magicCells.forEach((magic, index) => {
+
+        const dx = col - magic.col;
+        const dy = row - magic.row;
+
+        const distance = Math.sqrt(
+            dx * dx + dy * dy
+        );
+
+        if (distance <= 2.2) {
+
+            const baseTime =
+                (index / (magicCells.length - 1))
+                * FLIGHT_DURATION;
+
+            const delay =
+                baseTime +
+                distance * 0.22;
+
+            closest = Math.min(closest, delay);
+        }
+    });
+
+    if (closest === Infinity) {
+        return "indefinite";
+    }
+
+    return `${closest.toFixed(2)}s`;
+}
+
+// ============================================================
+// HALOS AUTOUR DES POINTS MAGIQUES
+// ============================================================
+
+let magicEffectsSvg = "";
+
+magicCells.forEach((point, index) => {
+
+    const x = cellX(point.col);
+    const y = cellY(point.row);
+
+    const delay =
+        (index / (magicCells.length - 1))
+        * FLIGHT_DURATION;
+
+    magicEffectsSvg += `
+        <!-- Halo -->
+        <circle
+            cx="${x}"
+            cy="${y}"
+            r="7"
+            fill="none"
+            stroke="${COLORS.magic}"
+            stroke-width="1"
+            opacity="0"
+        >
+            <animate
+                attributeName="r"
+                values="4;10;15"
+                dur="1.5s"
+                begin="${delay.toFixed(2)}s"
+                repeatCount="indefinite"
+            />
+
+            <animate
+                attributeName="opacity"
+                values="0;0.8;0"
+                dur="1.5s"
+                begin="${delay.toFixed(2)}s"
+                repeatCount="indefinite"
+            />
+        </circle>
+
+        <!-- Étoile centrale -->
+        <g
+            transform="translate(${x}, ${y})"
+            opacity="0"
+        >
+            <path
+                d="
+                    M 0 -7
+                    L 1.5 -1.5
+                    L 7 0
+                    L 1.5 1.5
+                    L 0 7
+                    L -1.5 1.5
+                    L -7 0
+                    L -1.5 -1.5
+                    Z
+                "
+                fill="${COLORS.magicBright}"
+            />
+
+            <animate
+                attributeName="opacity"
+                values="0;1;0"
+                dur="1.3s"
+                begin="${delay.toFixed(2)}s"
+                repeatCount="indefinite"
+            />
+
+            <animateTransform
+                attributeName="transform"
+                type="translate"
+                additive="sum"
+                values="
+                    ${x} ${y};
+                    ${x} ${y - 2};
+                    ${x} ${y}
+                "
+                dur="1.3s"
+                begin="${delay.toFixed(2)}s"
+                repeatCount="indefinite"
+            />
+        </g>
+    `;
+});
+
+// ============================================================
+// PETITES PARTICULES
+// ============================================================
+
+let particlesSvg = "";
+
+for (let i = 0; i < 22; i++) {
+
+    const index = i % magicCells.length;
+    const point = magicCells[index];
+
+    const x = cellX(point.col);
+    const y = cellY(point.row);
+
+    const offsetX = ((i * 17) % 11) - 5;
+    const offsetY = ((i * 13) % 9) - 4;
+
+    const delay =
+        (index / magicCells.length) * FLIGHT_DURATION
+        + (i % 5) * 0.18;
+
+    particlesSvg += `
+        <circle
+            cx="${x + offsetX}"
+            cy="${y + offsetY}"
+            r="${1 + (i % 2) * 0.5}"
+            fill="${COLORS.sparkle}"
+            opacity="0"
+        >
+            <animate
+                attributeName="opacity"
+                values="0;0.9;0"
+                dur="1.2s"
+                begin="${delay.toFixed(2)}s"
+                repeatCount="indefinite"
+            />
+
+            <animateTransform
+                attributeName="transform"
+                type="translate"
+                values="
+                    0 0;
+                    ${((i % 3) - 1) * 4} -5;
+                    ${((i % 5) - 2) * 6} -9
+                "
+                dur="1.2s"
+                begin="${delay.toFixed(2)}s"
+                repeatCount="indefinite"
+            />
+        </circle>
+    `;
+}
+
+// ============================================================
+// SVG FINAL
+// ============================================================
+
+const svg = `
 <svg
     xmlns="http://www.w3.org/2000/svg"
     xmlns:xlink="http://www.w3.org/1999/xlink"
@@ -39,129 +474,226 @@ let svg = `
     viewBox="0 0 ${WIDTH} ${HEIGHT}"
 >
 
-<rect
-    width="100%"
-    height="100%"
-    fill="#0d1117"
-/>
-`;
+    <defs>
 
-// --------------------------------------------------
-// Contribution squares
-// --------------------------------------------------
+        <!--
+            Glow doux pour la magie
+        -->
+        <filter
+            id="magic-glow"
+            x="-100%"
+            y="-100%"
+            width="300%"
+            height="300%"
+        >
+            <feGaussianBlur
+                stdDeviation="2.2"
+                result="blur"
+            />
 
-for (let row = 0; row < ROWS; row++) {
+            <feMerge>
+                <feMergeNode in="blur" />
+                <feMergeNode in="SourceGraphic" />
+            </feMerge>
+        </filter>
 
-    for (let col = 0; col < COLS; col++) {
-
-        const x = col * (CELL + GAP);
-        const y = row * (CELL + GAP);
-
-        const active = grid[row][col];
-
-        svg += `
-        <rect
-            x="${x}"
-            y="${y}"
-            width="${CELL}"
-            height="${CELL}"
-            rx="2"
-            fill="${active ? "#39d353" : "#161b22"}"
+        <!--
+            Chemin de déplacement de Clochette
+        -->
+        <path
+            id="clochette-flight"
+            d="${pathData}"
+            fill="none"
         />
-        `;
-    }
-}
 
-// --------------------------------------------------
-// Chemin de Clochette
-// --------------------------------------------------
+    </defs>
 
-let pathData = "";
+    <!-- =======================================================
+         GRAPHE
+         ======================================================= -->
 
-for (let col = 0; col < COLS; col++) {
+    <g id="contribution-grid">
+        ${dotsSvg}
+    </g>
 
-    if (col % 2 === 0) {
 
-        // haut → bas
+    <!-- =======================================================
+         EFFETS MAGIQUES
+         ======================================================= -->
 
-        for (let row = 0; row < ROWS; row++) {
-
-            const x = col * (CELL + GAP) + CELL / 2;
-            const y = row * (CELL + GAP) + CELL / 2;
-
-            pathData += `${pathData ? " L" : "M"} ${x} ${y}`;
-        }
-
-    } else {
-
-        // bas → haut
-
-        for (let row = ROWS - 1; row >= 0; row--) {
-
-            const x = col * (CELL + GAP) + CELL / 2;
-            const y = row * (CELL + GAP) + CELL / 2;
-
-            pathData += `${pathData ? " L" : "M"} ${x} ${y}`;
-        }
-    }
-}
-
-// --------------------------------------------------
-// Path invisible
-// --------------------------------------------------
-
-svg += `
-<path
-    id="clochette-path"
-    d="${pathData}"
-    fill="none"
-    stroke="none"
-/>
-`;
-
-// --------------------------------------------------
-// Clochette
-// --------------------------------------------------
-
-const imagePath = path.resolve("assets/clochette.png");
-
-const imageBase64 = fs.readFileSync(imagePath).toString("base64");
-
-svg += `
-<image
-    href="data:image/png;base64,${imageBase64}"
-    width="35"
-    height="35"
-    x="-17.5"
-    y="-17.5"
->
-    <animateMotion
-        dur="20s"
-        repeatCount="indefinite"
-        rotate="auto"
+    <g
+        id="magic-effects"
+        filter="url(#magic-glow)"
     >
-        <mpath href="#clochette-path"/>
-    </animateMotion>
-</image>
-`;
+        ${magicEffectsSvg}
+        ${particlesSvg}
+    </g>
 
-// --------------------------------------------------
-// Close SVG
-// --------------------------------------------------
 
-svg += `
+    <!-- =======================================================
+         CHEMIN DE CLOC HETTE
+         INVISIBLE
+         ======================================================= -->
+
+    <path
+        d="${pathData}"
+        fill="none"
+        stroke="none"
+    />
+
+
+    <!-- =======================================================
+         CLOC HETTE
+         
+         Groupe extérieur :
+         déplacement
+
+         Groupe intérieur :
+         flottement naturel
+         ======================================================= -->
+
+    <g id="clochette-motion">
+
+        <animateMotion
+            dur="${FLIGHT_DURATION}s"
+            repeatCount="indefinite"
+            rotate="0"
+            calcMode="spline"
+            keyTimes="
+                0;
+                0.14;
+                0.28;
+                0.42;
+                0.56;
+                0.70;
+                0.84;
+                1
+            "
+            keySplines="
+                0.42 0 0.58 1;
+                0.42 0 0.58 1;
+                0.42 0 0.58 1;
+                0.42 0 0.58 1;
+                0.42 0 0.58 1;
+                0.42 0 0.58 1;
+                0.42 0 0.58 1
+            "
+        >
+            <mpath href="#clochette-flight" />
+        </animateMotion>
+
+
+        <!--
+            Ce groupe flotte légèrement indépendamment
+            du déplacement principal.
+        -->
+
+        <g id="clochette-float">
+
+            <animateTransform
+                attributeName="transform"
+                type="translate"
+                values="
+                    0 0;
+                    0 -1.5;
+                    0 0;
+                    0 1.2;
+                    0 0
+                "
+                dur="3.8s"
+                repeatCount="indefinite"
+            />
+
+
+            <!--
+                Petit halo très discret autour de la fée.
+                Il aide à l'intégrer visuellement dans les dots.
+            -->
+
+            <circle
+                cx="0"
+                cy="0"
+                r="15"
+                fill="${COLORS.magic}"
+                opacity="0.08"
+                filter="url(#magic-glow)"
+            />
+
+
+            <!-- IMAGE DE CLOC HETTE -->
+
+            <image
+                href="data:image/png;base64,${imageBase64}"
+                x="-13"
+                y="-13"
+                width="26"
+                height="26"
+                preserveAspectRatio="xMidYMid meet"
+            />
+
+
+            <!--
+                Très petite poussière qui accompagne
+                directement la fée.
+            -->
+
+            <circle
+                cx="-9"
+                cy="7"
+                r="1"
+                fill="${COLORS.sparkle}"
+                opacity="0.9"
+            >
+                <animate
+                    attributeName="opacity"
+                    values="0.2;1;0.2"
+                    dur="0.8s"
+                    repeatCount="indefinite"
+                />
+            </circle>
+
+            <circle
+                cx="8"
+                cy="-6"
+                r="0.8"
+                fill="${COLORS.sparkle}"
+                opacity="0.7"
+            >
+                <animate
+                    attributeName="opacity"
+                    values="0.1;0.9;0.1"
+                    dur="1.1s"
+                    repeatCount="indefinite"
+                />
+            </circle>
+
+        </g>
+
+    </g>
+
 </svg>
 `;
 
-// --------------------------------------------------
-// Write file
-// --------------------------------------------------
+// ============================================================
+// ECRITURE
+// ============================================================
 
-fs.mkdirSync("dist", { recursive: true });
+const distDir = path.join(__dirname, "../dist");
 
-fs.writeFileSync(
-    "dist/clochette.svg",
-    svg
+if (!fs.existsSync(distDir)) {
+    fs.mkdirSync(distDir, { recursive: true });
+}
+
+const outputPath = path.join(
+    distDir,
+    "clochette.svg"
 );
 
-console.log("✅ Clochette graph generated!");
+fs.writeFileSync(
+    outputPath,
+    svg.trim()
+);
+
+console.log(
+    `✨ Clochette générée : ${outputPath}`
+);
