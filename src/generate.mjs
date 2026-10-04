@@ -566,6 +566,127 @@ for (let i = 0; i < 22; i++) {
 }
 
 // ============================================================
+// GRANDE PLUIE FINALE
+// ============================================================
+
+let finaleSvg = "";
+
+const finaleSparkles = 70;
+
+for (let i = 0; i < finaleSparkles; i++) {
+
+    const col = (i * 17) % COLS;
+    const row = (i * 29) % ROWS;
+
+    const x =
+        col * (CELL + GAP) + CELL / 2;
+
+    const targetY =
+        row * (CELL + GAP) + CELL / 2;
+
+    const startY =
+        -10 - ((i * 11) % 70);
+
+    const size =
+        0.7 + (i % 4) * 0.35;
+
+    const appear =
+        0.90 + (i % 7) * 0.012;
+
+    const impact =
+        Math.min(appear + 0.04, 0.98);
+
+    finaleSvg += `
+        <g
+            transform="translate(${x}, ${startY})"
+            opacity="0"
+        >
+
+            <circle
+                cx="0"
+                cy="0"
+                r="${size}"
+                fill="${COLORS.magicBright}"
+            />
+
+            <path
+                d="
+                    M 0 -3
+                    L 0.7 -0.7
+                    L 3 0
+                    L 0.7 0.7
+                    L 0 3
+                    L -0.7 0.7
+                    L -3 0
+                    L -0.7 -0.7
+                    Z
+                "
+                fill="${COLORS.magic}"
+            />
+
+            <animate
+                attributeName="opacity"
+                values="0;0;1;0.9;0"
+                keyTimes="
+                    0;
+                    ${appear.toFixed(3)};
+                    ${(appear + 0.02).toFixed(3)};
+                    ${impact.toFixed(3)};
+                    1
+                "
+                dur="${FLIGHT_DURATION}s"
+                repeatCount="indefinite"
+            />
+
+            <animateTransform
+                attributeName="transform"
+                type="translate"
+                values="
+                    ${x} ${startY};
+                    ${x} ${startY};
+                    ${x + ((i % 5) - 2) * 2} ${targetY};
+                    ${x} ${targetY}
+                "
+                keyTimes="
+                    0;
+                    ${appear.toFixed(3)};
+                    ${impact.toFixed(3)};
+                    1
+                "
+                dur="${FLIGHT_DURATION}s"
+                repeatCount="indefinite"
+            />
+
+        </g>
+    `;
+}
+
+finaleSvg += `
+    <!--
+        Flash magique global.
+        La grille entière est momentanément baignée
+        de lumière jaune.
+    -->
+    <rect
+        x="0"
+        y="0"
+        width="${WIDTH}"
+        height="${HEIGHT}"
+        fill="${COLORS.magicBright}"
+        opacity="0"
+        pointer-events="none"
+    >
+        <animate
+            attributeName="opacity"
+            values="0;0;0.08;0.20;0"
+            keyTimes="0;0.88;0.92;0.96;1"
+            dur="${FLIGHT_DURATION}s"
+            repeatCount="indefinite"
+        />
+    </rect>
+`;
+
+// ============================================================
 // SVG FINAL
 // ============================================================
 
@@ -632,7 +753,13 @@ const svg = `
         ${magicEffectsSvg}
         ${particlesSvg}
     </g>
-
+  
+    <g
+    id="finale-magic"
+    filter="url(#magic-glow)"
+>
+    ${finaleSvg}
+</g>
 
     <!-- =======================================================
          CHEMIN DE CLOC HETTE
