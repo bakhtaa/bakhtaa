@@ -14,4 +14,8 @@ Here are some ideas to get you started:
 - 😄 Pronouns: ...
 - ⚡ Fun fact: ...
 -->
+<div align="center">
 
+<img src="./dist/clochette.svg" alt="Clochette flying through my GitHub contributions">
+
+</div>
