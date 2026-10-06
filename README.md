@@ -28,6 +28,8 @@
 ![Apache Maven](https://img.shields.io/badge/APACHE_MAVEN-C71A36?style=for-the-badge&logo=apachemaven&logoColor=white)
 ![Apache](https://img.shields.io/badge/APACHE-D22128?style=for-the-badge&logo=apache&logoColor=white)
 ![Unity](https://img.shields.io/badge/UNITY-000000?style=for-the-badge&logo=unity&logoColor=white)
+![Mixamo](https://img.shields.io/badge/MIXAMO-000000?style=for-the-badge&logo=adobe&logoColor=white)
+![Blender](https://img.shields.io/badge/BLENDER-E87D0D?style=for-the-badge&logo=blender&logoColor=white)
 ![GitHub](https://img.shields.io/badge/GITHUB-181717?style=for-the-badge&logo=github&logoColor=white)
 ![GitLab](https://img.shields.io/badge/GITLAB-FC6D26?style=for-the-badge&logo=gitlab&logoColor=white)
 <!--
