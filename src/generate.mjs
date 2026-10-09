@@ -24,7 +24,7 @@ const FLIGHT_DURATION = 52;
 // COULEURS
 // ============================================================
 
-const COLORS = {
+/*const COLORS = {
     empty: "#161b22",
 
     green1: "#0e4429",
@@ -37,7 +37,28 @@ const COLORS = {
     magicGlow: "#ffd84d",
 
     sparkle: "#fff3a6"
+};*/
+const COLORS = {
+empty: "#161b22",
+
+
+// Aurora greens — deep emerald to luminous mint
+green1: "#0B3D35",
+green2: "#087F68",
+green3: "#20C997",
+green4: "#3DFFA8",
+
+// Warm aurora gold — brighter and better balanced with green
+magic: "#FFD76A",
+magicBright: "#FFF4C2",
+magicGlow: "#FFCB45",
+
+// Soft mint-white sparkle
+sparkle: "#E8FFF5"
+
+
 };
+
 
 // ============================================================
 // CHEMIN DE L'IMAGE
