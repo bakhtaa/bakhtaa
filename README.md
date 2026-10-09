@@ -46,7 +46,6 @@ Here are some ideas to get you started:
 - 😄 Pronouns: ...
 - ⚡ Fun fact: ...
 -->
-## 🌩️ Tech Stack
 
 <!--![JavaScript](https://img.shields.io/badge/JAVASCRIPT-FFD76A?style=for-the-badge\&logo=javascript\&logoColor=black)
 ![Java](https://img.shields.io/badge/JAVA-123F5A?style=for-the-badge\&logo=openjdk\&logoColor=white)
@@ -79,7 +78,7 @@ Here are some ideas to get you started:
 ![GitHub](https://img.shields.io/badge/GITHUB-0B3D35?style=for-the-badge\&logo=github\&logoColor=E8FFF5)
 ![GitLab](https://img.shields.io/badge/GITLAB-D957A8?style=for-the-badge\&logo=gitlab\&logoColor=white)-->
 
-## 🌩️ Tech Stack
+
 
 ![JavaScript](https://img.shields.io/badge/JAVASCRIPT-AFFC41?style=for-the-badge\&logo=javascript\&logoColor=black)
 ![Java](https://img.shields.io/badge/JAVA-150578?style=for-the-badge\&logo=openjdk\&logoColor=white)
