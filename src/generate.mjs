@@ -878,8 +878,8 @@ const svg = `
                 href="data:image/png;base64,${imageBase64}"
                 x="-13"
                 y="-13"
-                width="26"
-                height="26"
+                width="30"
+                height="30"
                 preserveAspectRatio="xMidYMid meet"
             />
 
