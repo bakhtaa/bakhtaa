@@ -1,5 +1,5 @@
 ## 
-
+Full Stack developer and  final year software engineering student, currently looking for an end of studies opportunity where I can contribute to a community, learn and grow.
 ## 🌩️ Tech Stack
 <!--
 ![JavaScript](https://img.shields.io/badge/JAVASCRIPT-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
