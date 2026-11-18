@@ -1,5 +1,7 @@
 ## Marhbe Bik 👋
 
+A magician practicing software engineering magic,🎩🐇🪄 a lifelong learner guided by curiosity and a keen eye for detail. 
+
 ## 🌩️ Tech Stack
 <!--
 ![JavaScript](https://img.shields.io/badge/JAVASCRIPT-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
