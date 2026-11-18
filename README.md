@@ -1,5 +1,4 @@
-## 
-Marhbe Bik 👋
+## Marhbe Bik 👋
 
 ## 🌩️ Tech Stack
 <!--
