@@ -119,5 +119,8 @@ Here are some ideas to get you started:
 <img src="./dist/clochette.svg" alt="Clochette flying through my GitHub contributions">
 
 </div>
+
+
 ## Listening to:
+
 <img width="452" height="535" alt="image" src="https://github.com/user-attachments/assets/9f1967b8-571a-4025-aebd-ef6acb52e7f0" />
