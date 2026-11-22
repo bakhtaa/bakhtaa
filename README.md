@@ -124,4 +124,4 @@ Here are some ideas to get you started:
 ## Listening to:
 <img width="320" alt="image" src="https://github.com/user-attachments/assets/9f1967b8-571a-4025-aebd-ef6acb52e7f0" />
 
-<img width="452" height="535" alt="image" src="https://github.com/user-attachments/assets/9f1967b8-571a-4025-aebd-ef6acb52e7f0" />
+
